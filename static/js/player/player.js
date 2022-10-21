@@ -25,7 +25,7 @@ export class Player extends AcGameObject {
 
         // 速度
         this.speedx = 400; // 水平速度
-        this.speedy = -1000; // 跳起的初始速度
+        this.speedy = -2000; // 跳起的初始速度
 
         // 重力加速度
         this.gravity = 50;
@@ -34,9 +34,13 @@ export class Player extends AcGameObject {
         // 状态机
         this.status = 3 // 0:原地不动 1:向前移动 2:向后移动 3:跳跃 4:攻击 5:被打 6:死亡
 
+        // 动作
+        this.animations = new Map();
+
         this.ctx = this.root.game_map.ctx;
 
-
+        // 计数器
+        this.frame_current_cnt = 0;
     }
 
     start() {
@@ -48,10 +52,18 @@ export class Player extends AcGameObject {
         if (this.y > 500) {
             this.y = 500;
             this.vy = 0;
-            this.status = 0;
+            if (this.status === 3) this.status = 0;
         }
         this.x += this.vx * this.timedelta / 1000;
         this.y += this.vy * this.timedelta / 1000;
+
+        // 超出屏幕
+        if (this.x < 0) {
+            this.x = 0;
+        } else if (this.x + this.width > this.root.game_map.$canvas.width()) {
+            this.x = this.root.game_map.$canvas.width() - this.width;
+        }
+
     }
 
     update_control() {
@@ -106,8 +118,20 @@ export class Player extends AcGameObject {
     }
 
     render() {
-        this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        // this.ctx.fillStyle = this.color;
+        // this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        let status = this.status;
+
+        let obj = this.animations.get(status);
+
+        // 如果obj存在且已经被渲染
+        if (obj && obj.loaded) {
+            let k = parseInt(this.frame_current_cnt / obj.frame_rate % obj.frame_cnt);
+            let image = obj.gif.frames[k].image;
+            // 画图
+            this.ctx.drawImage(image, this.x, this.y, this.width, image.height);
+        }
+        this.frame_current_cnt++;
     }
 
 }
