@@ -25,7 +25,7 @@ export class Player extends AcGameObject {
 
         // 速度
         this.speedx = 400; // 水平速度
-        this.speedy = -2000; // 跳起的初始速度
+        this.speedy = -1000; // 跳起的初始速度
 
         // 重力加速度
         this.gravity = 50;
@@ -48,7 +48,10 @@ export class Player extends AcGameObject {
     }
 
     update_move() {
-        this.vy += this.gravity;
+        if (this.status === 3) {
+            this.vy += this.gravity;
+        }
+
         if (this.y > 500) {
             this.y = 500;
             this.vy = 0;
@@ -84,8 +87,13 @@ export class Player extends AcGameObject {
 
         // 如果用户状态是0 || 1
         if (this.status === 0 || this.status === 1) {
-            // 如果是在跳
-            if (w) {
+            // 如果是在攻击
+            if (space) {
+                this.status = 4;
+                this.vx = 0;
+                this.frame_current_cnt = 0;
+                // 如果是在跳
+            } else if (w) {
                 // 如果是在向前，那么则往前方跳。
                 if (d) {
                     this.vx = this.speedx;
@@ -122,6 +130,10 @@ export class Player extends AcGameObject {
         // this.ctx.fillRect(this.x, this.y, this.width, this.height);
         let status = this.status;
 
+        if (this.status === 1 && this.direction * this.vx < 0) {
+            status = 2;
+        }
+
         let obj = this.animations.get(status);
 
         // 如果obj存在且已经被渲染
@@ -129,8 +141,19 @@ export class Player extends AcGameObject {
             let k = parseInt(this.frame_current_cnt / obj.frame_rate % obj.frame_cnt);
             let image = obj.gif.frames[k].image;
             // 画图
-            this.ctx.drawImage(image, this.x, this.y, this.width, image.height);
+            if (this.status === 4) {
+                this.ctx.drawImage(image, this.x, this.y + obj.offset_y - 30, this.width * obj.scale * 1.2, image.height * obj.scale * 1.2);
+            } else {
+                this.ctx.drawImage(image, this.x, this.y + obj.offset_y, this.width * obj.scale, image.height * obj.scale);
+            }
+
         }
+        if (status === 4) {
+            if (parseInt(this.frame_current_cnt / obj.frame_rate) === obj.frame_cnt) {
+                this.status = 0;
+            }
+        }
+
         this.frame_current_cnt++;
     }
 
