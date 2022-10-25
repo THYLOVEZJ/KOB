@@ -10,7 +10,7 @@ class KOF {
         this.game_map = new GameMap(this);
         this.Players = [
             new Kyo(this, {
-                id: 1,
+                id: 0,
                 x: 200,
                 y: 0,
                 width: 120,
@@ -18,7 +18,7 @@ class KOF {
                 color: 'blue',
             }),
             new Kyo(this, {
-                id: 2,
+                id: 1,
                 x: 900,
                 y: 0,
                 width: 120,

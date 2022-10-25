@@ -25,7 +25,7 @@ export class Player extends AcGameObject {
 
         // 速度
         this.speedx = 400; // 水平速度
-        this.speedy = -1000; // 跳起的初始速度
+        this.speedy = -1500; // 跳起的初始速度
 
         // 重力加速度
         this.gravity = 50;
@@ -122,12 +122,25 @@ export class Player extends AcGameObject {
     update() {
         this.update_control();
         this.update_move();
+        this.update_direction();
         this.render();
     }
 
+    update_direction() {
+        let player = this.root.Players;
+        if (player[0] && player[1]) {
+            let me = this, you = player[1 - this.id];
+            if (me.x < you.x) {
+                me.direction = 1;
+            } else {
+                me.direction = -1;
+            }
+        }
+    }
+
     render() {
-        // this.ctx.fillStyle = this.color;
-        // this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        this.ctx.fillStyle = "blue";
+        this.ctx.fillRect(this.x, this.y, this.width, this.height);
         let status = this.status;
 
         if (this.status === 1 && this.direction * this.vx < 0) {
@@ -138,15 +151,22 @@ export class Player extends AcGameObject {
 
         // 如果obj存在且已经被渲染
         if (obj && obj.loaded) {
-            let k = parseInt(this.frame_current_cnt / obj.frame_rate % obj.frame_cnt);
-            let image = obj.gif.frames[k].image;
-            // 画图
-            if (this.status === 4) {
-                this.ctx.drawImage(image, this.x, this.y + obj.offset_y - 30, this.width * obj.scale * 1.2, image.height * obj.scale * 1.2);
-            } else {
+            if (this.direction > 0) {
+                let k = parseInt(this.frame_current_cnt / obj.frame_rate % obj.frame_cnt);
+                let image = obj.gif.frames[k].image;
+                // 画图
                 this.ctx.drawImage(image, this.x, this.y + obj.offset_y, this.width * obj.scale, image.height * obj.scale);
+            } else {
+                this.ctx.save();
+                // 将坐标轴对调
+                this.ctx.scale(-1, 1);
+                this.ctx.translate(-this.root.game_map.$canvas.width(), 0);
+                let k = parseInt(this.frame_current_cnt / obj.frame_rate % obj.frame_cnt);
+                let image = obj.gif.frames[k].image;
+                // 画图
+                this.ctx.drawImage(image, this.root.game_map.$canvas.width() - this.x - this.width, this.y + obj.offset_y, this.width * obj.scale, image.height * obj.scale);
+                this.ctx.restore();
             }
-
         }
         if (status === 4) {
             if (parseInt(this.frame_current_cnt / obj.frame_rate) === obj.frame_cnt) {
